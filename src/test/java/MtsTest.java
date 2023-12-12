@@ -1,71 +1,65 @@
+import org.junit.jupiter.api.Test;
 import org.openqa.selenium.By;
+import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
 
+import java.util.concurrent.TimeUnit;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class MtsTest {
-    public static void main(String[] args) {
+    public static WebDriver driver;
+
+    @Test
+    public void mtsFirstTest() {
+        System.setProperty("webdriver.chrome.driver", "src/main/resources/chromedriver.exe");
         WebDriver driver = new ChromeDriver();
+        driver.manage().timeouts().implicitlyWait(100, TimeUnit.SECONDS);
         driver.get("https://www.mts.by/");
+        WebDriverWait webDriverWait = new WebDriverWait(driver, 30);
 
-        WebElement cookieWindow = driver.findElement(By.cssSelector(".cookie.show"));
+        webDriverWait.until(ExpectedConditions.presenceOfElementLocated(By.cssSelector(".cookie.show")));
+        WebElement acceptButton = driver.findElement(By.cssSelector(".cookie__ok"));
+        acceptButton.click();
 
-        if (cookieWindow.isDisplayed()) {
-            // Нажатие кнопки "Принять"
-            WebElement acceptButton = driver.findElement(By.cssSelector(".cookie__ok"));
-            acceptButton.click();
-        }
+        ((JavascriptExecutor) driver).executeScript("window.scrollBy(0,1800)", "");
 
+        WebElement titleElement = driver.findElement(By.xpath("//h2[text() = 'Онлайн пополнение ']"));
+        String title = titleElement.getText();
+        assertEquals("Онлайн пополнение\nбез комиссии", title);
+
+        WebElement logoVisa = driver.findElement(By.xpath("//li//img[@alt = 'Visa']"));
+        WebElement logoVisaVerified = driver.findElement(By.xpath("//li//img[@alt = 'Verified By Visa']"));
+        WebElement logoMasterCard = driver.findElement(By.xpath("//li//img[@alt = 'MasterCard']"));
+        WebElement logoMasterCardSecure = driver.findElement(By.xpath("//li//img[@alt = 'MasterCard Secure Code']"));
+        WebElement logoBelCard = driver.findElement(By.xpath("//li//img[@alt = 'Белкарт']"));
+        WebElement logoMir = driver.findElement(By.xpath("//li//img[@alt = 'МИР']"));
         WebElement partnersSection = driver.findElement(By.xpath("//div[@class='pay__partners']"));
         int logosCount = partnersSection.findElements(By.tagName("img")).size();
-        if (logosCount == 6) {
-            System.out.println("Логотипы платежных систем присутствуют");
-        } else {
-            System.out.println("Логотипы платежных систем отсутствуют или их количество неверное");
-        }
+        assertEquals(6, logosCount);
 
-
-        WebElement connectionForm = driver.findElement(By.xpath("//form[@id='pay-connection']"));
-        WebElement phoneField = connectionForm.findElement(By.xpath("//input[@id='connection-phone']"));
+        WebElement phoneField = driver.findElement(By.xpath("//input[@id='connection-phone']"));
         phoneField.sendKeys("297777777");
-
-        WebElement sumField = connectionForm.findElement(By.xpath("//input[@id='connection-sum']"));
+        WebElement sumField = driver.findElement(By.xpath("//input[@id='connection-sum']"));
         sumField.sendKeys("100");
-
-        WebElement emailField = connectionForm.findElement(By.xpath("//input[@id='connection-email']"));
+        WebElement emailField = driver.findElement(By.xpath("//input[@id='connection-email']"));
         emailField.sendKeys("test@gmail.com");
 
-        WebElement continueButton = connectionForm.findElement(By.xpath("//button[@id='pay-connection']"));
+        WebElement button = driver.findElement(By.xpath("(//div//button[@class ='button button__default '])[1]"));
+        button.click();
+        WebElement cross = driver.findElement(By.xpath("//div//svg-icon[@class = 'header__close-icon']"));
+        cross.click();
+        //assertEquals("МТС – мобильный оператор в Беларуси", driver.getTitle());
 
-        continueButton.click();
-
-
-        WebElement headerElement = driver.findElement(By.xpath("//h2[@class='pay__wrapper']"));
-        String headerText = headerElement.getText();
-        if (headerText.equals("Онлайн пополнение " +
-                "без комиссии")) {
-            System.out.println("Заголовок блока соответствует ожидаемому значению.");
-        } else {
-            System.out.println("Заголовок блока не соответствует ожидаемому значению.");
-        }
-
-        WebElement moreDetailsLink = driver.findElement(By.xpath("//a[contains(text(), 'Подробнее о сервисе')]"));
-        moreDetailsLink.click();
-
-        //Проверка названия  блока НЕ ПОЛУЧИЛОСЬ
-        /* WebElement headerElement = driver.findElement(By.xpath("//h2[@class='pay__wrapper']"));
-        String headerText = headerElement.getText();
-        if (headerText.equals("Онлайн пополнение без комиссии")) {
-            System.out.println("Заголовок блока соответствует ожидаемому значению.");
-        } else {
-            System.out.println("Заголовок блока не соответствует ожидаемому значению.");
-        }*/
+        WebElement link = driver.findElement(By.xpath("//a[text() = 'Подробнее о сервисе']"));
+        webDriverWait.until(ExpectedConditions.elementToBeClickable(link));
+        link.click();
+        assertEquals("https://www.mts.by/help/poryadok-oplaty-i-bezopasnost-internet-platezhey/", driver.getCurrentUrl());
 
         driver.quit();
     }
 }
-
-
-
-
